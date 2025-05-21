@@ -1,0 +1,89 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuickList - Classifieds</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-900">
+  <div class="container mx-auto p-4">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">QuickList</h1>
+      <button id="openFormBtn" class="bg-blue-600 text-white px-4 py-2 rounded-xl hover:bg-blue-700">Post an Ad</button>
+    </header><input type="text" id="searchInput" placeholder="Search listings..." class="w-full p-2 mb-4 border rounded-xl" />
+
+<div id="listings" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+  <!-- Listings appear here -->
+</div>
+
+  </div>  <!-- Modal Form -->  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md relative">
+      <button id="closeFormBtn" class="absolute top-2 right-2 text-gray-600">&times;</button>
+      <h2 class="text-xl font-bold mb-4">Post a New Ad</h2>
+      <form id="adForm" class="flex flex-col gap-3">
+        <input type="text" id="title" placeholder="Title" class="p-2 border rounded" required />
+        <textarea id="description" placeholder="Description" class="p-2 border rounded" required></textarea>
+        <input type="number" id="price" placeholder="Price" class="p-2 border rounded" required />
+        <select id="category" class="p-2 border rounded" required>
+          <option value="">Select Category</option>
+          <option value="Electronics">Electronics</option>
+          <option value="Vehicles">Vehicles</option>
+          <option value="Services">Services</option>
+        </select>
+        <input type="file" id="image" accept="image/*" class="p-2 border rounded" />
+        <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Submit</button>
+      </form>
+    </div>
+  </div>  <script>
+    const openFormBtn = document.getElementById("openFormBtn");
+    const closeFormBtn = document.getElementById("closeFormBtn");
+    const modal = document.getElementById("modal");
+    const adForm = document.getElementById("adForm");
+    const listings = document.getElementById("listings");
+    const searchInput = document.getElementById("searchInput");
+
+    openFormBtn.onclick = () => modal.classList.remove("hidden");
+    closeFormBtn.onclick = () => modal.classList.add("hidden");
+
+    let ads = [];
+
+    adForm.onsubmit = (e) => {
+      e.preventDefault();
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+      const price = document.getElementById("price").value;
+      const category = document.getElementById("category").value;
+      const image = document.getElementById("image").files[0];
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const newAd = { title, description, price, category, imageUrl: event.target.result };
+        ads.unshift(newAd);
+        renderAds();
+        modal.classList.add("hidden");
+        adForm.reset();
+      };
+      if (image) reader.readAsDataURL(image);
+      else reader.onload({ target: { result: "" } });
+    };
+
+    function renderAds() {
+      const query = searchInput.value.toLowerCase();
+      listings.innerHTML = "";
+      ads.filter(ad => ad.title.toLowerCase().includes(query)).forEach(ad => {
+        const card = document.createElement("div");
+        card.className = "bg-white p-4 rounded-xl shadow";
+        card.innerHTML = `
+          <img src="${ad.imageUrl}" alt="Image" class="w-full h-48 object-cover mb-2 rounded" onerror="this.style.display='none'" />
+          <h3 class="text-lg font-bold">${ad.title}</h3>
+          <p class="text-sm text-gray-600">${ad.category}</p>
+          <p class="text-gray-700">${ad.description}</p>
+          <p class="text-green-600 font-semibold mt-1">$${ad.price}</p>
+        `;
+        listings.appendChild(card);
+      });
+    }
+
+    searchInput.oninput = renderAds;
+  </script></body>
+</html>
